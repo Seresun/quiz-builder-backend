@@ -52,10 +52,17 @@ export class QuizzesService {
     });
   }
 
-  remove(id: number) {
-    return this.prisma.quiz.delete({
-      where: { id },
-    });
+  async remove(id: number) {
+    const [, deletedQuiz] = await this.prisma.$transaction([
+      this.prisma.question.deleteMany({
+        where: { quizId: id },
+      }),
+      this.prisma.quiz.delete({
+        where: { id },
+      }),
+    ]);
+
+    return deletedQuiz;
   }
 }
 
